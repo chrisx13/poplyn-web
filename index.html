@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0f1226" />
+<meta name="description" content="POPLYN — pose, aligne, fais exploser : puzzle block-blast 8x8, combos et coffres." />
+<title>POPLYN</title>
+<!-- PWA : installable + jouable hors-ligne (voir service-worker.js) -->
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="POPLYN" />
+<link rel="stylesheet" href="src/style.css" />
+</head>
+<body>
+<div id="wrap">
+  <header>
+    <div class="brand">POP<b>L</b>YN</div>
+    <div class="scores">
+      <div class="score"><div class="lbl">Score</div><div class="val" id="score">0</div></div>
+      <div class="score"><div class="lbl">Record</div><div class="val" id="best">0</div></div>
+    </div>
+  </header>
+  <div class="hud">
+    <div class="chip" id="coins-chip">🪙 <span id="coins">0</span></div>
+    <div class="chip" id="streak-chip">🔥 <span id="streak">0</span> j</div>
+    <div class="chip" id="bonus-chip" hidden>✨ <span id="bonus">0</span></div>
+    <button class="chip chip-btn" id="btn-shop-hud" title="Boutique">🎨</button>
+  </div>
+  <div class="combo" id="combo"></div>
+  <canvas id="c" width="440" height="600"></canvas>
+  <!-- Boosters : boutons + compteurs construits par game.js (catalogue de src/boosters.js) -->
+  <div class="boosters" id="boosters"></div>
+  <footer>Pose les 3 pièces • complète lignes &amp; colonnes • enchaîne les combos</footer>
+</div>
+
+<div class="overlay" id="home">
+  <div class="card home">
+    <div class="logo">POP<b>L</b>YN</div>
+    <div class="sub">Pose, aligne, fais exploser.</div>
+    <div class="stats">
+      <div class="stat"><div class="lbl">Record</div><div class="val" id="home-best">0</div></div>
+      <div class="stat"><div class="lbl">Aujourd'hui</div><div class="val" id="home-today">0</div></div>
+      <div class="stat"><div class="lbl">Série</div><div class="val" id="home-streak">0 j</div></div>
+    </div>
+    <button class="btn-primary" id="btn-play">Jouer</button>
+    <button class="btn-ghost" id="btn-shop">🎨 Skins &amp; boutique</button>
+    <div class="board-title">Meilleurs scores</div>
+    <ol class="lb" id="home-lb"></ol>
+  </div>
+</div>
+
+<div class="overlay" id="shop">
+  <div class="card">
+    <h2>Boutique</h2>
+    <div class="sub">Ton solde : <b id="shop-coins">0</b> 🪙</div>
+    <div class="skins" id="skin-list"></div>
+    <button class="btn-rewarded" id="btn-skinpack">Pack de skins<small>Achat unique — débloque tous les skins premium</small></button>
+    <div id="shop-list"></div>
+    <button class="btn-ghost" id="btn-restore">Restaurer mes achats</button>
+    <button class="btn-ghost" id="btn-shop-close">Fermer</button>
+  </div>
+</div>
+
+<div class="overlay" id="over">
+  <div class="card">
+    <h2>Partie terminée</h2>
+    <div class="big" id="over-score">0</div>
+    <div class="sub" id="over-sub">Record : 0</div>
+    <button class="btn-rewarded" id="btn-revive">Continuer<small>Regarder une pub &amp; libérer 2 lignes</small></button>
+    <span class="chest" id="chest">🎁</span>
+    <div class="loot" id="loot"></div>
+    <button class="btn-primary" id="btn-chest">Ouvrir le coffre</button>
+    <button class="btn-rewarded" id="btn-double" hidden>Doubler (pub)<small>Regarder une pub &amp; doubler le gain</small></button>
+    <button class="btn-ghost" id="btn-again">Rejouer</button>
+    <button class="btn-ghost" id="btn-menu">Accueil</button>
+  </div>
+</div>
+
+<div class="overlay" id="daily">
+  <div class="card">
+    <h2>Bonus quotidien</h2>
+    <div class="sub" id="daily-sub">Reviens chaque jour, la récompense grimpe.</div>
+    <div class="dots" id="daily-dots"></div>
+    <div class="big" id="daily-gain">+0</div>
+    <div class="sub">pièces</div>
+    <!-- Dose de boosters offerte du jour (src/boosters.js), remplie par game.js -->
+    <div class="sub free-boosters" id="daily-boosters" hidden></div>
+    <button class="btn-primary" id="btn-daily">Récupérer</button>
+  </div>
+</div>
+
+<!-- Stock épuisé : les 3 façons d'en récupérer (pièces, pub, pack) -->
+<div class="overlay" id="booster-offer">
+  <div class="card">
+    <h2 id="offer-title">Booster</h2>
+    <div class="sub" id="offer-desc"></div>
+    <div class="sub">Ton solde : <b id="offer-coins">0</b> 🪙</div>
+    <button class="btn-primary" id="btn-offer-coins">Acheter</button>
+    <button class="btn-rewarded" id="btn-offer-ad">Regarder une pub<small>+1 booster offert</small></button>
+    <button class="btn-ghost" id="btn-offer-pack">Pack de boosters</button>
+    <button class="btn-ghost" id="btn-offer-close">Fermer</button>
+  </div>
+</div>
+
+<!-- Régie publicitaire : src/ads.js branche window.Ads sur le mock (web) ou
+     sur AdMob (natif Capacitor). Chargé avant game.js, qui ne voit que le
+     contrat showRewarded / showInterstitial. -->
+<script type="module" src="src/ads.js"></script>
+<script>
+/* Stub d'achats intégrés — repli si les modules ne chargent pas : `game.js`
+   rebranche window.IAP sur l'adaptateur src/iap.js (provider MOCK aujourd'hui,
+   StoreKit/Play Billing ensuite).
+   purchase(id) -> Promise<boolean> (true = achat validé). */
+window.IAP = window.IAP || {
+  purchase: () => Promise.resolve(true),
+  restore:  () => Promise.resolve([]),
+};
+/* Service worker : mise en cache de la coquille pour jouer hors-ligne.
+   Chemin relatif -> marche aussi sous un sous-chemin (GitHub Pages). */
+if ('serviceWorker' in navigator) {
+  addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js')
+      .catch(err => console.warn('[sw] enregistrement impossible :', err));
+  });
+}
+</script>
+<script type="module" src="src/game.js"></script>
+</body>
+</html>
