@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0f1226" />
+<title>POPLYN — Play free</title>
+<meta property="og:title" content="POPLYN — block puzzle" />
+<meta property="og:description" content="Pose, aligne, fais exploser. Combos, coffres, défie tes amis." />
+<meta property="og:type" content="website" />
+<style>
+  :root{ --bg:#0f1226; --panel:#171a33; --ink:#eef0ff; --muted:#8b90c0; --accent:#ffd23f; --line:#2a2f57; }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;min-height:100%;background:radial-gradient(1200px 600px at 50% -10%,#1c2050,#0f1226 60%);
+    color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif}
+  .wrap{max-width:460px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 28px) 20px 40px;text-align:center}
+  .logo{font-weight:900;letter-spacing:3px;font-size:34px}
+  .logo b{color:var(--accent)}
+  .icon{width:112px;height:112px;border-radius:26px;margin:22px auto 8px;display:block;
+    background:linear-gradient(160deg,#20244a,#171a33);border:1px solid var(--line);
+    box-shadow:0 18px 50px rgba(0,0,0,.45);position:relative;overflow:hidden}
+  .icon i{position:absolute;border-radius:6px}
+  .tag{font-size:18px;color:var(--muted);margin:6px 0 26px;line-height:1.4}
+  .cta{display:block;width:100%;padding:17px;border-radius:16px;border:0;font-size:18px;font-weight:800;
+    background:var(--accent);color:#20160a;cursor:pointer;text-decoration:none;margin:10px 0}
+  .cta.secondary{background:#20244a;color:var(--ink)}
+  .stores{display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+  .badge{flex:1;min-width:140px;padding:12px;border-radius:14px;border:1px solid var(--line);background:var(--panel);
+    color:var(--ink);text-decoration:none;font-weight:700;font-size:14px;display:flex;flex-direction:column;gap:2px}
+  .badge small{color:var(--muted);font-weight:600;font-size:11px}
+  .badge.soon{opacity:.5}
+  .feat{display:flex;gap:14px;justify-content:center;margin:26px 0 0;color:var(--muted);font-size:13px;flex-wrap:wrap}
+  footer{margin-top:30px;color:var(--muted);font-size:12px}
+  footer a{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo">POP<b>L</b>YN</div>
+  <div class="icon" id="icon"></div>
+  <div class="tag" id="tag">Pose, aligne, fais exploser. Combos, coffres, défie tes amis.</div>
+
+  <a class="cta" id="primary" href="#">Jouer maintenant</a>
+  <a class="cta secondary" id="web" href="#">Jouer dans le navigateur</a>
+
+  <div class="stores">
+    <a class="badge soon" id="appstore" href="#"> App Store <small id="ios-soon">Bientôt</small></a>
+    <a class="badge soon" id="playstore" href="#"> Google Play <small id="and-soon">Bientôt</small></a>
+  </div>
+
+  <div class="feat">
+    <span id="f1">🏆 Défie tes amis</span><span id="f2">🌍 12 langues</span><span id="f3">📱 Gratuit</span>
+  </div>
+
+  <footer>
+    <span id="pub">Un jeu cblink</span> ·
+    <a id="privacy" href="privacy.html">Confidentialité</a> ·
+    <a id="terms" href="terms.html">CGU</a>
+  </footer>
+</div>
+
+<script>
+/* ============================================================================
+   Landing "smart link" POPLYN — route selon l'OS vers le meilleur canal de
+   telechargement, avec repli sur le jeu web. Reutilisable: changer CONFIG.
+   ========================================================================== */
+(() => {
+  const CONFIG = {
+    name: "POPLYN",
+    web: "./",                              // jeu web (meme repo)
+    appStore: "",                           // vide = "Bientot" (route web en attendant)
+    playStore: "",                          // vide = "Bientot"
+    accent: "#ffd23f",
+    // Accroche localisee (repli en)
+    tag: {
+      en:"Drop, line up, blast! Combos, chests, challenge your friends.",
+      fr:"Pose, aligne, fais exploser. Combos, coffres, défie tes amis.",
+      es:"¡Coloca, alinea, explota! Combos, cofres, reta a tus amigos.",
+      de:"Legen, ausrichten, sprengen! Combos, Truhen, fordere Freunde heraus.",
+      pt:"Encaixe, alinhe, exploda! Combos, baús, desafie amigos.",
+      it:"Posiziona, allinea, esplodi! Combo, forzieri, sfida gli amici."
+    },
+    t: {
+      play:{en:"Play now",fr:"Jouer maintenant",es:"Jugar ahora",de:"Jetzt spielen",pt:"Jogar agora",it:"Gioca ora"},
+      web:{en:"Play in browser",fr:"Jouer dans le navigateur",es:"Jugar en el navegador",de:"Im Browser spielen",pt:"Jogar no navegador",it:"Gioca nel browser"},
+      soon:{en:"Soon",fr:"Bientôt",es:"Pronto",de:"Bald",pt:"Em breve",it:"Presto"},
+      f1:{en:"🏆 Challenge friends",fr:"🏆 Défie tes amis",es:"🏆 Reta a amigos",de:"🏆 Freunde fordern",pt:"🏆 Desafie amigos",it:"🏆 Sfida gli amici"}
+    }
+  };
+  const lang = (navigator.language||"en").slice(0,2).toLowerCase();
+  const pick = m => m[lang] || m.en;
+  document.documentElement.lang = lang;
+  document.getElementById('tag').textContent = pick(CONFIG.tag);
+  document.getElementById('f1').textContent = pick(CONFIG.t.f1);
+
+  const ua = navigator.userAgent||"";
+  const isIOS = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+  const isAndroid = /Android/i.test(ua);
+
+  const $ = id => document.getElementById(id);
+  $('web').href = CONFIG.web;
+  $('web').textContent = pick(CONFIG.t.web);
+
+  // Store badges
+  function badge(id, url, soonId){
+    const el = $(id);
+    if(url){ el.href = url; el.classList.remove('soon'); $(soonId).textContent = ""; }
+    else { el.href = CONFIG.web; $(soonId).textContent = pick(CONFIG.t.soon); }
+  }
+  badge('appstore', CONFIG.appStore, 'ios-soon');
+  badge('playstore', CONFIG.playStore, 'and-soon');
+
+  // Bouton principal = meilleur canal selon l'OS (repli web)
+  const primary = $('primary');
+  primary.textContent = pick(CONFIG.t.play);
+  let target = CONFIG.web;
+  if(isIOS && CONFIG.appStore) target = CONFIG.appStore;
+  else if(isAndroid && CONFIG.playStore) target = CONFIG.playStore;
+  primary.href = target;
+
+  // Petite icone decorative (blocs facon POPLYN)
+  const icon = $('icon'); const cols=['#ff5c7a','#ffd23f','#4dd0e1','#7c6cff','#5bd68a'];
+  for(let i=0;i<9;i++){ const s=document.createElement('i'); const sz=26;
+    s.style.width=s.style.height=sz+'px'; s.style.left=(14+(i%3)*32)+'px'; s.style.top=(14+((i/3)|0)*32)+'px';
+    s.style.background=cols[(i*2)%cols.length]; s.style.opacity=(i%4===0?0.35:1); icon.appendChild(s); }
+})();
+</script>
+</body>
+</html>
